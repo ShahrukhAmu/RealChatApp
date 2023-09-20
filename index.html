@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  
+  <title>Chatting App</title>
+  
+  <style>
+    body {
+      background-image: linear-gradient(rgb(255, 255, 255), purple);
+      height: 88vh;
+      margin: 0;
+      padding-bottom: 3rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+
+    .container{
+    /* border: 2px solid black; */
+    width: 95vw;
+    margin: auto;
+    height: 90vh;
+    /* padding: 33px; */
+    overflow: auto;
+    /* margin-bottom: 23px; */
+}
+
+
+.message{
+    background-color: grey;
+    width: 30%;
+    padding: 12px;
+    margin: 17px 12px;
+    border: 2px solid black;
+    border-radius: 30px;
+}
+
+.right{
+    float: right;
+    clear: both;
+}
+
+.left{
+    float: left;
+    clear: both;
+}
+
+    #form {
+      background: rgba(0, 0, 0, 0.15);
+      padding: 0.25rem;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      height: 3rem;
+      box-sizing: border-box;
+      backdrop-filter: blur(10px);
+    }
+
+    #messageInp {
+      border: none;
+      padding: 0 1rem;
+      flex-grow: 1;
+      border-radius: 2rem;
+      margin: 0.25rem;
+    }
+
+    #messageInp:focus {
+      outline: none;
+    }
+
+    #form>button {
+      background: #333;
+      border: none;
+      padding: 0 1rem;
+      margin: 0.25rem;
+      border-radius: 3px;
+      outline: none;
+      color: #fff;
+    }
+
+    
+  </style>
+  
+</head>
+
+<body>
+  <div class="container">
+    
+  </div>
+    <form id="form" action="">
+      <input id="messageInp" autocomplete="off" /><button>Send</button>
+    </form>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+
+  <script>
+    const socket = io();
+
+    
+    const form = document.getElementById('form');
+    const messageInput = document.getElementById('messageInp');
+    const messageContainer = document.querySelector('.container');
+
+    
+    const append = (message, position)=>{
+        const messageElement = document.createElement('div');
+        messageElement.innerText = message;
+        messageElement.classList.add('message');
+        messageElement.classList.add(position);
+        messageContainer.append(messageElement);
+        
+    }
+
+    const name = prompt('Enter the name to join the chat')
+
+    if(name){
+      socket.emit('new-user-joined', name)
+
+    }
+
+    socket.on('user-joined', (name)=>{
+      append(`${name} joined the chat`, 'right')
+    })
+
+
+    socket.on('receive', (data)=>{
+      append(`${data.name}: ${data.message}`, 'left');
+    })
+
+    socket.on('left', (name)=>{
+      if(name){
+        append(`${name} left the chat`, 'left');
+
+      }
+    })
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const messages = messageInput.value;
+      append(`You: ${messages}`, 'right');
+      socket.emit('send', messages);
+      messageInput.value = ''
+    });
+
+
+
+  
+  </script>
+
+</body>
+
+</html>
